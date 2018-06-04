@@ -1,0 +1,9 @@
+.Bills {
+  display: flex;
+  padding: 7px;
+  box-sizing: border-box;
+  position: relative;
+  border-top: 7px solid #CC2936;
+  width: 30%;
+  flex-flow: column;
+}

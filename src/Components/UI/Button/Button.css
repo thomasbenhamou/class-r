@@ -1,0 +1,103 @@
+.Button {
+  display: inline;
+  padding: 7px 14px;
+  margin: 7px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: transparent;
+  outline: none;
+  transition: all 0.1s ease-in-out;
+  border: none;
+}
+
+.savedButton {
+  width: 300px;
+  height: 50px;
+  color: #3ab795;
+  cursor: default;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.saveButton {
+  width: 300px;
+  height: 50px;
+  background-color: #3ab795;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.emptyButton {
+  width: 300px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.connectButton {
+  color: #455560;
+  border-radius: 25px;
+  transition: all 0.1s ease-in-out;
+}
+
+.connectButton:hover {
+  border-radius: 25px;
+  color: #455560;
+  background-color: white;
+}
+
+.loginButton:disabled {
+  cursor: not-allowed;
+  color: #eee;
+}
+
+.loginButton {
+  background-color: #41b695;
+  color: white;
+}
+
+.createAccount {
+  border: 2px solid #ccc;
+  color: #bbb;
+}
+
+.createAccount:hover {
+  border: 2px solid #fff;
+  color: #aaa;
+}
+
+.logout {
+  color: #455560;
+  transition: all 0.1s ease-in-out;
+}
+
+.cancelDelete {
+  color: white;
+  text-decoration: underline;
+  margin: 0;
+  padding: 0;
+}
+
+.cancelDelete:hover {
+  color: #ccc;
+}
+
+.confirmDelete {
+  color: white;
+  text-decoration: underline;
+  margin: 0;
+  padding: 0;
+}
+
+.confirmDelete:hover {
+  color: red;
+}

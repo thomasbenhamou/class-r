@@ -1,0 +1,41 @@
+.noButton {
+  border: none;
+  background-color: transparent;
+  color: transparent;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  outline: 0;
+  font: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+.noButton:hover {
+  background-color: #ddd;
+}
+
+.inputGroup:focus-within {
+  outline: none;
+  background-color: #eee;
+  width: 100%;
+}
+
+.inputGroup {
+  width: 60%;
+  border: 1px solid #eee;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: width 0.1s ease-in;
+}
+
+.Input {
+  outline: none;
+  font: inherit;
+  border: none;
+  flex: 1;
+  padding: 7px;
+  width: 50%;
+  background-color: transparent;
+  transition: width 0.1s ease-in;
+}

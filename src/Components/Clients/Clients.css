@@ -1,0 +1,50 @@
+.Clients {
+  display: flex;
+  padding: 7px;
+  box-sizing: border-box;
+  position: relative;
+  border-top: 7px solid #fcaa67;
+  width: 30%;
+  flex-flow: column;
+}
+
+.ClientsContainer {
+  display: flex;
+  box-sizing: border-box;
+  flex-flow: column;
+  height: 50vh;
+  overflow-y: scroll;
+  margin-bottom: 14px;
+}
+
+.searchInput {
+  outline: none;
+  border-radius: 7px;
+  padding: 7px;
+  font: inherit;
+  border: none;
+  flex: 1;
+  width: 50%;
+  background-color: transparent;
+}
+
+.inputGroup:focus-within {
+  outline: none;
+  background-color: #eee;
+  width: 100%;
+}
+
+.inputGroup {
+  width: 60%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: width 0.1s ease-in;
+}
+
+.fixedBottomMenu {
+  width: inherit;
+  box-sizing: border-box;
+  position: fixed;
+  bottom: 5%;
+}

@@ -1,0 +1,21 @@
+.Bill {
+  box-sizing: border-box;
+  padding: 7px 14px;
+  margin: 7px;
+  border: 1px dashed #eee;
+  border-radius: 3px;
+  font-style: italic;
+  color: #969696;
+}
+
+.active {
+  box-sizing: border-box;
+  padding: 7px 14px;
+  margin: 7px;
+  cursor: pointer;
+  border: 1px solid #ca2c3a;
+  border-radius: 3px;
+  background-color: #eee;
+  transition: all 0.1s ease-in-out;
+  color: black;
+}

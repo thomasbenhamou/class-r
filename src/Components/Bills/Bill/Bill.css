@@ -1,0 +1,42 @@
+.Bill {
+  box-sizing: border-box;
+  padding: 7px 14px;
+  margin: 7px;
+  cursor: pointer;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  transition: all 0.1s ease-in-out;
+  position: relative;
+}
+
+.line {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+}
+
+.type {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #969696;
+}
+
+.badge {
+  position: absolute;
+  top: -11px;
+  left: -5px;
+  background-color: white;
+  padding: 1px;
+  color: #969696;
+  font-size: 0.8rem;
+}
+
+.editButton {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.editButton:hover {
+  background-color: #ddd;
+  cursor: pointer;
+}

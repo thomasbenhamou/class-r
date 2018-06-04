@@ -1,0 +1,47 @@
+.DisabledInput {
+  width: 70%;
+  box-sizing: border-box;
+  border: none;
+  font-size: 1rem;
+  margin: 7px;
+  padding: 7px;
+  cursor: text;
+  color: #969696;
+  border-bottom: 2px solid transparent;
+}
+
+.DisabledInput::placeholder {
+  color: #969696;
+}
+
+.DisabledInput:focus {
+  width: 70%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  border-bottom: 2px solid rgb(62, 73, 94);
+  font-size: 1rem;
+  margin: 7px;
+  padding: 7px;
+  color: rgb(0, 0, 0);
+}
+
+.DisabledInputLarge {
+  width: 70%;
+  box-sizing: border-box;
+  border: none;
+  font-size: 1.4rem;
+  cursor: text;
+  color: #3a435e;
+  border-bottom: 2px solid transparent;
+}
+
+.DisabledInputLarge:focus {
+  width: 70%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  border-bottom: 2px solid rgb(62, 73, 94);
+  font-size: 1.4rem;
+  color: rgb(0, 0, 0);
+}

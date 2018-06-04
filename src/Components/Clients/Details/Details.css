@@ -1,0 +1,11 @@
+.line {
+  height: 0px;
+  border-radius: 2px;
+  border: 2px solid #faaa6c;
+  width: 80%;
+  margin-left: 0;
+}
+
+.saveAlert {
+  color: #79dbcd;
+}

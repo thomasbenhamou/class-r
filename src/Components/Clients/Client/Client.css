@@ -1,0 +1,42 @@
+.wrapper {
+  position: relative;
+}
+
+.Client {
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  padding: 7px 14px;
+  margin: 7px;
+  cursor: pointer;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  transition: all 0.1s ease-in-out;
+}
+
+.Client:hover {
+  background-color: #eee;
+}
+
+.selected {
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+  padding: 7px 14px;
+  margin: 7px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background-color: #eee;
+  border-radius: 3px;
+}
+
+.editButton {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.editButton:hover {
+  background-color: #ddd;
+}

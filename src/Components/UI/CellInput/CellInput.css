@@ -1,0 +1,12 @@
+.cellInput {
+  outline: none;
+  border: none;
+  font-family: inherit;
+  padding: 12px 0px;
+  width: 100%;
+}
+
+.cellInput:focus {
+  color: #000 !important;
+  background-color: rgb(248, 248, 248);
+}

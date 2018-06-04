@@ -1,0 +1,32 @@
+.logo {
+  height: 150px;
+  width: 150px;
+}
+.fileInput {
+  margin: 7px;
+  padding: 7px 14px;
+  background-color: #45555f;
+  color: #fff;
+}
+
+.details {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.logoDiv {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+.inputDiv {
+  margin: 10px 0px;
+}
+
+.saveDiv {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
