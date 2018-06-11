@@ -28,12 +28,26 @@
   margin: 7px;
   cursor: pointer;
   border: 1px solid transparent;
+  border-left: 1px solid #faaa6c;
   background-color: #eee;
   border-radius: 3px;
 }
 
+.selected:hover .editButton {
+  visibility: visible;
+}
+
+.Client:hover .editButton {
+  visibility: visible;
+}
+
 .editButton {
+  visibility: hidden;
+  display: flex;
+  align-items: center;
   height: 100%;
+  border-radius: 3px;
+  padding: 3px;
   box-sizing: border-box;
 }
 

@@ -1,3 +1,16 @@
+.header {
+  width: 100%;
+  font-size: 1.3rem;
+  background-color: #455560;
+  color: white;
+  text-align: center;
+  padding: 7px 0px;
+}
+
+.content {
+  padding: 16px;
+}
+
 .logo {
   height: 150px;
   width: 150px;

@@ -5,35 +5,74 @@ import CellInput from '../../UI/CellInput/CellInput';
 import Button from '../../UI/Button/Button';
 import MdCloudDone from 'react-icons/lib/md/cloud-done';
 import MdCached from 'react-icons/lib/md/cached';
-import { database } from '../../../firebase/firebase';
+import { database, storage } from '../../../firebase/firebase';
 import CircleSpinner from '../../UI/CircleSpinner/CircleSpinner';
 import Controls from '../../Quotes/QuoteDetails/Controls/Controls';
 import PrintLink from '../../Quotes/QuoteDetails/PrintLink/PrintLink';
+import Infos from '../../Company/Infos/Infos';
+import Title from '../../Company/Title/Title';
+import CommentsArea from '../../UI/CommentsArea/CommentsArea';
 
 class BillDetails extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      details: this.props.details,
-      name: this.props.name,
+      details: null,
+      name: null,
+      comments: '',
       nameChanged: false,
       dataChanged: false,
       loading: false,
-      detailsHaveChanged: false
+      detailsHaveChanged: false,
+      companyInfo: null
     };
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    if (state.detailsHaveChanged) {
+    let detailsData = null;
+    let name = null;
+    let comments = null;
+    database.ref('bills/' + props.billId).on('value', snapshot => {
+      if (snapshot.val()) {
+        detailsData = snapshot.val().details;
+        name = snapshot.val().name;
+        comments = snapshot.val().comments;
+      }
+    });
+    if (detailsData && name) {
       return {
-        detailsHaveChanged: false
+        details: detailsData,
+        name: name,
+        comments: comments
       };
-    } else {
-      return {
-        details: props.details,
-        name: props.name
-      };
-    }
+    } else return null;
+  };
+
+  componentDidMount = () => {
+    database.ref('companyInfo/').on('value', snapshot => {
+      this.setState({
+        companyInfo: {
+          ...this.state.companyInfo,
+          city: snapshot.val().city,
+          email: snapshot.val().email,
+          name: snapshot.val().name,
+          phone: snapshot.val().phone,
+          street: snapshot.val().street
+        }
+      });
+    });
+    storage
+      .ref()
+      .child('file.png')
+      .getDownloadURL()
+      .then(url => {
+        this.setState({
+          companyInfo: {
+            ...this.state.companyInfo,
+            logo: url
+          }
+        });
+      });
   };
 
   updateData = billId => {
@@ -49,11 +88,32 @@ class BillDetails extends Component {
       });
   };
 
+  updateLogo = () => {
+    storage
+      .ref()
+      .child('file.png')
+      .getDownloadURL()
+      .then(url => {
+        this.setState({
+          companyInfo: {
+            ...this.state.companyInfo,
+            logo: url
+          }
+        });
+      });
+  };
   onChangeNameHandler = e => {
     this.setState({
       name: e.target.value,
       nameChanged: true,
       detailsHaveChanged: true
+    });
+  };
+
+  onChangeComments = e => {
+    this.setState({
+      comments: e.target.value,
+      dataChanged: true
     });
   };
 
@@ -79,7 +139,8 @@ class BillDetails extends Component {
       {
         name: this.state.name,
         details: this.state.details,
-        totalPrice: totalPrice
+        totalPrice: totalPrice,
+        comments: this.state.comments
       },
       error => {
         this.setState({
@@ -150,7 +211,9 @@ class BillDetails extends Component {
               />
             </div>
             <div className={classes.flexCellDisabled}>
-              {this.state.details[i].unitPrice * this.state.details[i].quantity}
+              {this.state.details[i].unitPrice *
+                this.state.details[i].quantity +
+                ' €'}
             </div>
             <div className={classes.controls}>
               <Controls
@@ -163,18 +226,28 @@ class BillDetails extends Component {
       });
     }
 
+    let companyInfo = <CircleSpinner />;
+    if (this.state.companyInfo) {
+      companyInfo = <Infos data={this.state.companyInfo} />;
+    }
+
+    if (this.props.customLogo) {
+      this.updateLogo();
+    }
+
     return (
       <div className={classes.wrapper}>
+        {companyInfo}
+        <Title name="Facture :">
+          <CellInput
+            changed={this.onChangeNameHandler}
+            value={this.state.name ? this.state.name : ''}
+            color="#000"
+            fontSize="1.5rem"
+            textAlign="left"
+          />
+        </Title>
         <div className={classes.quoteHeader}>
-          <div className={classes.title}>
-            <CellInput
-              changed={this.onChangeNameHandler}
-              value={this.state.name ? this.state.name : ''}
-              color="#000"
-              fontSize="1.4rem"
-              textAlign="left"
-            />
-          </div>
           {this.state.loading ? (
             <Button btnType="emptyButton">
               <CircleSpinner />
@@ -199,7 +272,28 @@ class BillDetails extends Component {
             </div>
           )}
         </div>
-        <PrintLink />
+        {this.props.creatingPdf ? (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginRight: '30px'
+            }}
+          >
+            <CircleSpinner />
+          </div>
+        ) : (
+          <PrintLink
+            clicked={() =>
+              this.props.createPdf(
+                this.state.name,
+                this.state.details,
+                this.state.comments,
+                this.state.companyInfo
+              )
+            }
+          />
+        )}
         <div className={classes.tableWrapper}>
           <div className={classes.flexTable}>
             <div className={classes.flexHeader}>
@@ -212,10 +306,14 @@ class BillDetails extends Component {
             {detailsTable}
             <div className={classes.totalLine}>
               <div className={classes.totalCell}>Total</div>
-              <div className={classes.totalCell}>{totalPrice}</div>
+              <div className={classes.totalCell}>{totalPrice + ' €'}</div>
             </div>
           </div>
         </div>
+        <CommentsArea
+          value={this.state.comments}
+          changed={this.onChangeComments}
+        />
         <SmallDeleteButton clicked={this.props.onDelete} />
       </div>
     );

@@ -10,6 +10,8 @@ import MdLocationCity from 'react-icons/lib/md/location-city';
 import MdCloudDone from 'react-icons/lib/md/cloud-done';
 import MdCached from 'react-icons/lib/md/cached';
 import Button from '../../Button/Button';
+import { connect } from 'react-redux';
+import * as actions from '../../../../store/actions/actions';
 
 class Customize extends Component {
   state = {
@@ -47,13 +49,16 @@ class Customize extends Component {
     this.setState({
       loadingLogo: true
     });
-    const storageRef = storage.ref().child('customLogo.png');
+    const storageRef = storage.ref().child('file.png');
     storageRef.put(e.target.files[0]).then(snapshot => {
       storageRef.getDownloadURL().then(url => {
-        this.setState({
-          logo: url,
-          loadingLogo: false
-        });
+        this.setState(
+          {
+            logo: url,
+            loadingLogo: false
+          },
+          () => this.props.onUseCustomLogo()
+        );
       });
     });
   };
@@ -157,64 +162,75 @@ class Customize extends Component {
       );
     }
     return (
-      <div>
-        <h2>Paramètres</h2>
-        <div style={{ marginBottom: '30px' }}>{companyName}</div>
-        <div className={classes.details}>
-          <div>{companyInfos}</div>
-          <div className={classes.logoDiv}>
-            {this.state.loadingLogo ? (
-              <CircleSpinner />
-            ) : (
-              <img
-                className={classes.logo}
-                src={
-                  this.state.logo
-                    ? this.state.logo
-                    : 'https://firebasestorage.googleapis.com/v0/b/class-r.appspot.com/o/file.png?alt=media&token=b2401f73-fb92-4904-9bd3-b4712d247a05'
-                }
-                alt="logo"
-              />
-            )}
-            <div className={classes.inputDiv}>
-              <label className={classes.fileInput} htmlFor="inputRef">
-                Sélectionner un logo
-              </label>
-              <input
-                style={{ display: 'none' }}
-                type="file"
-                onChange={this.fileSelectedHandler}
-                id="inputRef"
-              />
+      <React.Fragment>
+        <div className={classes.header}>Paramètres</div>
+        <div className={classes.content}>
+          <div style={{ marginBottom: '30px' }}>{companyName}</div>
+          <div className={classes.details}>
+            <div>{companyInfos}</div>
+            <div className={classes.logoDiv}>
+              {this.state.loadingLogo ? (
+                <CircleSpinner />
+              ) : (
+                <img
+                  className={classes.logo}
+                  src={
+                    this.state.logo
+                      ? this.state.logo
+                      : 'https://firebasestorage.googleapis.com/v0/b/class-r.appspot.com/o/file.png?alt=media&token=b2401f73-fb92-4904-9bd3-b4712d247a05'
+                  }
+                  alt="logo"
+                />
+              )}
+              <div className={classes.inputDiv}>
+                <label className={classes.fileInput} htmlFor="inputRef">
+                  Sélectionner un logo
+                </label>
+                <input
+                  style={{ display: 'none' }}
+                  type="file"
+                  onChange={this.fileSelectedHandler}
+                  id="inputRef"
+                />
+              </div>
             </div>
           </div>
+          <div className={classes.saveDiv}>
+            {this.state.loading ? (
+              <Button>
+                <CircleSpinner />
+              </Button>
+            ) : this.state.dataChanged ? (
+              <Button btnType="saveButton" clicked={this.saveChanges}>
+                <MdCached size={18} /> Sauvegarder les modifications
+              </Button>
+            ) : (
+              <Button btnType="savedButton" clicked={this.saveChanges}>
+                <span
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <MdCloudDone color="#41B695" size={18} /> Données enregistrées
+                </span>
+              </Button>
+            )}
+          </div>
         </div>
-        <div className={classes.saveDiv}>
-          {this.state.loading ? (
-            <Button>
-              <CircleSpinner />
-            </Button>
-          ) : this.state.dataChanged ? (
-            <Button btnType="saveButton" clicked={this.saveChanges}>
-              <MdCached size={18} /> Sauvegarder les modifications
-            </Button>
-          ) : (
-            <Button btnType="savedButton" clicked={this.saveChanges}>
-              <span
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <MdCloudDone color="#41B695" size={18} /> Données enregistrées
-              </span>
-            </Button>
-          )}
-        </div>
-      </div>
+      </React.Fragment>
     );
   }
 }
 
-export default Customize;
+const mapDispatchToProps = dispatch => {
+  return {
+    onUseCustomLogo: () => dispatch(actions.useCustomLogo())
+  };
+};
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(Customize);

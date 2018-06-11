@@ -24,6 +24,7 @@ class NavBar extends Component {
         <Modal
           show={this.state.showSettings}
           modalClosed={() => this.showSettings()}
+          padding={'0px'}
         >
           <Customize />
         </Modal>
@@ -36,7 +37,7 @@ class NavBar extends Component {
               </span>
             ) : null}
           </div>
-          <h2>class-r</h2>
+          <h2 className={classes.brand}>classe_r</h2>
           <div>
             <MdSettings
               onClick={this.showSettings}

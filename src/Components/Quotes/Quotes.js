@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
 import classes from './Quotes.css';
-import axios from 'axios';
 import { connect } from 'react-redux';
 import Quote from './Quote/Quote';
 import Modal from '../UI/Modal/Modal';
 import QuoteDetails from './QuoteDetails/QuoteDetails';
-import ButtonSpinner from '../UI/ButtonSpinner/ButtonSpinner';
 import ButtonInput from '../UI/ButtonInput/ButtonInput';
 import { database } from '../../firebase/firebase';
 import BottomToaster from '../UI/BottomToaster/BottomToaster';
 import Button from '../UI/Button/Button';
+import ReactDOMServer from 'react-dom/server';
+import html2pdf from 'html2pdf.js';
+import QuotePdf from '../Pdfs/QuotePdf/QuotePdf';
+import SearchBar from '../UI/SearchBar/SearchBar';
 
 class Quotes extends Component {
   constructor(props) {
@@ -19,16 +21,19 @@ class Quotes extends Component {
       selectedClient: null,
       showDetails: false,
       selectedQuote: null,
-      selectedQuoteDetails: null,
       loadingNewQuote: false,
+      searchTerm: '',
       needToSelect: false,
       warningMessage: '',
       deleteModal: {
         show: false,
         loading: false
-      }
+      },
+      creatingPdf: false
     };
   }
+
+  quoteContainerRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
     return {
@@ -37,38 +42,27 @@ class Quotes extends Component {
   }
 
   componentDidMount = () => {
-    database
-      .ref('quotes/')
-      .once('value')
-      .then(snapshot => {
-        this.setState({
-          quotes: snapshot.val()
-        });
+    database.ref('quotes/').on('value', snapshot => {
+      this.setState({
+        quotes: snapshot.val()
       });
+    });
   };
 
   openDetails = quoteId => {
     this.setState({
       showDetails: true,
-      selectedQuote: quoteId,
-      selectedQuoteDetails: {
-        ...this.state.quotes[quoteId]
-      }
+      selectedQuote: quoteId
     });
   };
 
   updateList = () => {
-    axios
-      .get('https://class-r.firebaseio.com/quotes.json')
-      .then(res => {
-        this.setState({
-          quotes: res.data,
-          loadingNewQuote: false
-        });
-      })
-      .catch(error => {
-        console.log(error);
+    database.ref('quotes/').on('value', snapshot => {
+      this.setState({
+        quotes: snapshot.val(),
+        loadingNewQuote: false
       });
+    });
   };
 
   addNewQuote = newQuoteName => {
@@ -88,16 +82,54 @@ class Quotes extends Component {
             unitPrice: '',
             quantity: ''
           }
-        ]
+        ],
+        comments: ''
       },
       error => {
+        this.scrollToBottom();
         if (error) {
           console.log('error');
-        } else {
-          this.updateList();
         }
       }
     );
+  };
+
+  scrollToBottom = () => {
+    const container = this.quoteContainerRef.current;
+    container.scrollTop = container.scrollHeight;
+  };
+
+  handleChangeInput = event => {
+    this.setState({
+      searchTerm: event.target.value
+    });
+  };
+
+  filterList = (list, searchTerm) => {
+    const search = searchTerm
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    if (searchTerm === '') {
+      return list;
+    }
+    let filteredList = null;
+    Object.keys(list).map(e => {
+      const listElem = list[e].name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (listElem.match(search)) {
+        filteredList = {
+          ...filteredList,
+          [e]: {
+            ...list[e]
+          }
+        };
+      }
+      return null;
+    });
+    return filteredList;
   };
 
   onAddQuoteFocused = () => {
@@ -128,27 +160,16 @@ class Quotes extends Component {
   };
 
   deleteQuote = () => {
-    this.setState({
-      deleteModal: {
-        show: true,
-        loading: true
-      }
-    });
-    database
-      .ref('quotes/' + this.state.selectedQuote)
-      .remove()
-      .then(() => {
-        this.setState(
-          {
-            deleteModal: {
-              show: false,
-              loading: false
-            },
-            showDetails: false
-          },
-          this.updateList()
-        );
+    database.ref('quotes/' + this.state.selectedQuote).off();
+    database.ref('quotes/' + this.state.selectedQuote).remove(error => {
+      this.setState({
+        deleteModal: {
+          show: false,
+          loading: false
+        },
+        showDetails: false
       });
+    });
   };
 
   detailsChangedHandler = hasChanged => {
@@ -157,23 +178,63 @@ class Quotes extends Component {
     }
   };
 
+  createPdf = (quoteName, quoteData, quoteComments, companyData) => {
+    this.setState({
+      creatingPdf: true
+    });
+    // render  a new component custom made for pdf
+    const html = ReactDOMServer.renderToStaticMarkup(
+      <QuotePdf
+        name={quoteName}
+        details={quoteData}
+        comments={quoteComments}
+        companyInfo={companyData}
+      />
+    );
+    const options = {
+      margin: 0.5,
+      filename: ('Devis' + quoteName + '.pdf').trim(),
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        logging: false,
+        useCORS: true
+      },
+      jsPDF: { unit: 'in', orientation: 'portrait' }
+    };
+    html2pdf()
+      .from(html)
+      .set(options)
+      .save()
+      .then(res => {
+        this.setState({
+          creatingPdf: false
+        });
+      });
+  };
+
   render() {
     let quotes = null;
     if (this.state.quotes) {
-      quotes = Object.keys(this.state.quotes).map(quoteId => {
-        if (this.state.selectedClient === this.state.quotes[quoteId].clientId) {
-          return (
-            <Quote
-              key={quoteId}
-              id={quoteId}
-              name={this.state.quotes[quoteId].name}
-              date={this.state.quotes[quoteId].date}
-              totalPrice={this.state.quotes[quoteId].totalPrice}
-              clicked={() => this.openDetails(quoteId)}
-            />
-          );
-        } else return null;
-      });
+      let displayedList = this.filterList(
+        this.state.quotes,
+        this.state.searchTerm
+      );
+      if (!displayedList) quotes = 'Aucun résulat';
+      displayedList &&
+        (quotes = Object.keys(displayedList).map(quoteId => {
+          if (this.state.selectedClient === displayedList[quoteId].clientId) {
+            return (
+              <Quote
+                key={quoteId}
+                id={quoteId}
+                name={displayedList[quoteId].name}
+                date={displayedList[quoteId].date}
+                totalPrice={displayedList[quoteId].totalPrice}
+                clicked={() => this.openDetails(quoteId)}
+              />
+            );
+          } else return null;
+        }));
     }
 
     let detailsModal = null;
@@ -185,10 +246,12 @@ class Quotes extends Component {
           modalType="large"
         >
           <QuoteDetails
-            {...this.state.selectedQuoteDetails}
             quoteId={this.state.selectedQuote}
-            hasChanged={this.detailsChangedHandler}
+            name={this.state.name}
             onDelete={this.confirmDeleteQuote}
+            createPdf={this.createPdf}
+            creatingPdf={this.state.creatingPdf}
+            customLogo={this.props.customLogo}
           />
         </Modal>
       );
@@ -214,18 +277,17 @@ class Quotes extends Component {
     return (
       <div className={classes.Quotes}>
         {deleteModal}
-        <h2>Devis</h2>
+        <div className={classes.catTitle}>Devis</div>
+        <SearchBar
+          searchTerm={this.state.searchTerm}
+          changed={this.handleChangeInput}
+        />
         {!this.state.selectedClient ? (
           <div className={classes.prompt}>
             Sélectionnez un client pour voir les devis associés
           </div>
         ) : (
-          <div className={classes.quotesContainer}>
-            {this.state.loadingNewQuote ? (
-              <Quote name="...">
-                <ButtonSpinner />
-              </Quote>
-            ) : null}
+          <div className={classes.quotesContainer} ref={this.quoteContainerRef}>
             {quotes}
           </div>
         )}
@@ -249,7 +311,8 @@ class Quotes extends Component {
 
 const mapStateToProps = state => {
   return {
-    selectedClient: state.selectedClient
+    selectedClient: state.selectedClient,
+    customLogo: state.customLogo
   };
 };
 

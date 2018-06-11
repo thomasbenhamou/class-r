@@ -17,8 +17,8 @@ class Modal extends Component {
         <div
           className={[classes.Modal, classes[this.props.modalType]].join(' ')}
           style={{
-            transform: this.props.show ? 'translateY(0)' : 'translateY(-100vh)',
-            opacity: this.props.show ? '1' : '0'
+            display: this.props.show ? 'block' : 'none',
+            padding: this.props.padding ? this.props.padding : '16px'
           }}
         >
           {this.props.children}

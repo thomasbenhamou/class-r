@@ -3,6 +3,7 @@
   padding: 7px 14px;
   margin: 7px;
   border: 1px solid #eee;
+  border-left: 2px solid #41b695;
   border-radius: 3px;
   transition: all 0.1s ease-in-out;
   position: relative;
@@ -11,6 +12,10 @@
 .Quote:hover {
   background-color: #eee;
   cursor: pointer;
+}
+
+.Quote:hover .editButton {
+  visibility: visible;
 }
 
 .selected {
@@ -26,6 +31,10 @@
   border-radius: 3px;
 }
 
+.selected:hover .editButton {
+  visibility: visible;
+}
+
 .line {
   display: flex;
   flex-flow: row;
@@ -39,11 +48,26 @@
 }
 
 .editButton {
+  visibility: hidden;
+  display: flex;
+  align-items: center;
   height: 100%;
+  border-radius: 3px;
+  padding: 3px;
   box-sizing: border-box;
 }
 
 .editButton:hover {
   background-color: #ddd;
   cursor: pointer;
+}
+
+.badge {
+  position: absolute;
+  top: -11px;
+  left: -5px;
+  background-color: white;
+  padding: 1px;
+  color: #969696;
+  font-size: 0.8rem;
 }

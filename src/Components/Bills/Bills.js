@@ -9,6 +9,10 @@ import Modal from '../UI/Modal/Modal';
 import BillDetails from './BillDetails/BillDetails';
 import BottomToaster from '../UI/BottomToaster/BottomToaster';
 import Button from '../UI/Button/Button';
+import ReactDOMServer from 'react-dom/server';
+import html2pdf from 'html2pdf.js';
+import BillPdf from '../Pdfs/BillPdf/BillPdf';
+import SearchBar from '../UI/SearchBar/SearchBar';
 
 class Bills extends Component {
   state = {
@@ -21,8 +25,25 @@ class Bills extends Component {
       show: false,
       loading: false
     },
+    searchTerm: '',
     loadingSentIcon: false,
-    loadingPaidIcon: false
+    loadingPaidIcon: false,
+    creatingPdf: false,
+    showBillAlreadyExistsModal: false,
+    newBillId: null,
+    newBillData: null
+  };
+
+  checkIfBillExists = (quoteId, data) => {
+    database.ref('bills/' + quoteId).once('value', snap => {
+      if (snap.val()) {
+        this.setState({
+          showBillAlreadyExistsModal: true,
+          newBillId: quoteId,
+          newBillData: data
+        });
+      } else this.createBillFromQuote(quoteId, data);
+    });
   };
 
   createBillFromQuote = (quoteId, data) => {
@@ -36,11 +57,17 @@ class Bills extends Component {
       sent: false,
       paid: false
     };
+
     database
       .ref('bills/' + quoteId)
       .set(billData)
       .then(error => {
         this.updateList();
+        if (this.state.showBillAlreadyExistsModal) {
+          this.setState({
+            showBillAlreadyExistsModal: false
+          });
+        }
         if (error) console.log(error);
       });
   };
@@ -58,14 +85,11 @@ class Bills extends Component {
   };
 
   componentDidMount = () => {
-    database
-      .ref('bills/')
-      .once('value')
-      .then(snapshot => {
-        this.setState({
-          bills: snapshot.val()
-        });
+    database.ref('bills/').on('value', snapshot => {
+      this.setState({
+        bills: snapshot.val()
       });
+    });
   };
 
   openDetails = billId => {
@@ -98,6 +122,7 @@ class Bills extends Component {
   };
 
   deleteBill = () => {
+    database.ref('bills/' + this.state.selectedBill).off();
     this.setState({
       deleteModal: {
         show: true,
@@ -108,22 +133,52 @@ class Bills extends Component {
       .ref('bills/' + this.state.selectedBill)
       .remove()
       .then(() => {
-        this.setState(
-          {
-            deleteModal: {
-              show: false,
-              loading: false
-            },
-            showDetails: false
+        this.setState({
+          deleteModal: {
+            show: false,
+            loading: false
           },
-          this.updateList()
-        );
+          showDetails: false
+        });
       });
+  };
+
+  handleChangeInput = event => {
+    this.setState({
+      searchTerm: event.target.value
+    });
+  };
+
+  filterList = (list, searchTerm) => {
+    const search = searchTerm
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    if (searchTerm === '') {
+      return list;
+    }
+    let filteredList = null;
+    Object.keys(list).map(e => {
+      const listElem = list[e].name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (listElem.match(search)) {
+        filteredList = {
+          ...filteredList,
+          [e]: {
+            ...list[e]
+          }
+        };
+      }
+      return null;
+    });
+    return filteredList;
   };
 
   sendIconHandler = billId => {
     this.setState({
-      loadingSentIcon: true
+      loadingSentIcon: billId
     });
     const newIconState = !this.state.bills[billId].sent;
     database
@@ -137,7 +192,7 @@ class Bills extends Component {
             ...this.state.bills,
             [billId]: {
               ...this.state.bills[billId],
-              sent: !this.state.bills[billId].sent
+              sent: newIconState
             }
           },
           loadingSentIcon: false
@@ -147,7 +202,7 @@ class Bills extends Component {
 
   payIconHandler = billId => {
     this.setState({
-      loadingPaidIcon: true
+      loadingPaidIcon: billId
     });
     const newIconState = !this.state.bills[billId].paid;
     database
@@ -161,10 +216,40 @@ class Bills extends Component {
             ...this.state.bills,
             [billId]: {
               ...this.state.bills[billId],
-              paid: !this.state.bills[billId].paid
+              paid: newIconState
             }
           },
           loadingPaidIcon: false
+        });
+      });
+  };
+
+  createPdf = (billName, billData, billComments, companyData) => {
+    this.setState({
+      creatingPdf: true
+    });
+    const html = ReactDOMServer.renderToStaticMarkup(
+      <BillPdf
+        name={billName}
+        details={billData}
+        comments={billComments}
+        companyInfo={companyData}
+      />
+    );
+    const options = {
+      margin: 0.5,
+      filename: ('Facture ' + billName + '.pdf').trim(),
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { logging: false, useCORS: true },
+      jsPDF: { unit: 'in', orientation: 'portrait' }
+    };
+    html2pdf()
+      .from(html)
+      .set(options)
+      .save()
+      .then(res => {
+        this.setState({
+          creatingPdf: false
         });
       });
   };
@@ -179,10 +264,12 @@ class Bills extends Component {
           modalType="large"
         >
           <BillDetails
-            {...this.state.selectedBillDetails}
             billId={this.state.selectedBill}
             hasChanged={this.detailsChangedHandler}
             onDelete={this.confirmDeleteBill}
+            createPdf={this.createPdf}
+            creatingPdf={this.state.creatingPdf}
+            customLogo={this.props.customLogo}
           />
         </Modal>
       );
@@ -205,42 +292,86 @@ class Bills extends Component {
       </BottomToaster>
     );
 
+    const billAlreadyExistsModal = (
+      <BottomToaster show={this.state.showBillAlreadyExistsModal}>
+        Une facture existe déjà pour ce devis. Voulez-vous la mettre à jour avec
+        les données du devis ?
+        <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+          <Button
+            clicked={() => this.setState({ showBillAlreadyExistsModal: false })}
+            btnType="cancelDelete"
+          >
+            Annuler
+          </Button>
+          <Button
+            clicked={() =>
+              this.createBillFromQuote(
+                this.state.newBillId,
+                this.state.newBillData
+              )
+            }
+            btnType="confirmDelete"
+          >
+            Confirmer
+          </Button>
+        </div>
+      </BottomToaster>
+    );
+
     let billsList = null;
     if (this.state.bills) {
-      billsList = Object.keys(this.state.bills).map(billId => {
-        if (this.props.selectedClient === this.state.bills[billId].clientId) {
-          return (
-            <Bill
-              key={billId}
-              id={billId}
-              name={this.state.bills[billId].name}
-              totalPrice={this.state.bills[billId].totalPrice}
-              date={this.state.bills[billId].date}
-              clicked={this.openDetails}
-              loadingSentIcon={this.state.loadingSentIcon}
-              sentChecked={this.state.bills[billId].sent}
-              clickedSent={this.sendIconHandler}
-              loadingPaidIcon={this.state.loadingPaidIcon}
-              paidChecked={this.state.bills[billId].paid}
-              clickedPaid={this.payIconHandler}
-            />
-          );
-        } else return null;
-      });
+      let displayedList = this.filterList(
+        this.state.bills,
+        this.state.searchTerm
+      );
+      if (!displayedList) billsList = 'Aucun résulat';
+      displayedList &&
+        (billsList = Object.keys(displayedList).map(billId => {
+          if (this.props.selectedClient === displayedList[billId].clientId) {
+            return (
+              <Bill
+                key={billId}
+                id={billId}
+                name={displayedList[billId].name}
+                totalPrice={displayedList[billId].totalPrice}
+                date={displayedList[billId].date}
+                clicked={this.openDetails}
+                loadingSentIcon={this.state.loadingSentIcon}
+                sentChecked={displayedList[billId].sent}
+                clickedSent={this.sendIconHandler}
+                loadingPaidIcon={this.state.loadingPaidIcon}
+                paidChecked={displayedList[billId].paid}
+                clickedPaid={this.payIconHandler}
+              />
+            );
+          } else return null;
+        }));
     }
 
     return (
       <div className={classes.Bills}>
         {deleteModal}
+        {billAlreadyExistsModal}
         {detailsModal}
-        <h2>Factures</h2>
-        {billsList}
+        <div className={classes.catTitle}>Factures</div>
+        <SearchBar
+          searchTerm={this.state.searchTerm}
+          changed={this.handleChangeInput}
+        />
+        {!this.props.selectedClient ? (
+          <div className={classes.prompt}>
+            Sélectionnez un client pour voir les factures associées
+          </div>
+        ) : (
+          <div className={classes.billsContainer}>{billsList}</div>
+        )}
+
         {this.state.loading ? (
           <Bill name="..." total="...">
             <ButtonSpinner />
           </Bill>
         ) : null}
-        <DropzoneBill onCreateBill={this.createBillFromQuote} />
+        <DropzoneBill onCreateBill={this.checkIfBillExists} />
       </div>
     );
   }
@@ -248,7 +379,8 @@ class Bills extends Component {
 
 const mapStateToProps = state => {
   return {
-    selectedClient: state.selectedClient
+    selectedClient: state.selectedClient,
+    customLogo: state.customLogo
   };
 };
 

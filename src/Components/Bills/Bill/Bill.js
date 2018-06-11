@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import classes from './Bill.css';
-import MdMoreHoriz from 'react-icons/lib/md/more-horiz';
 import MdSend from 'react-icons/lib/md/send';
 import MdPayment from 'react-icons/lib/md/payment';
 import CircleSpinner from '../../UI/CircleSpinner/CircleSpinner';
+import MdEdit from 'react-icons/lib/md/edit';
 
 class Bill extends Component {
   state = {
@@ -33,15 +33,14 @@ class Bill extends Component {
   render() {
     return (
       <div className={classes.Bill}>
-        <div className={classes.badge}>Facture</div>
+        {/* <div className={classes.badge}>Facture</div> */}
         <div className={classes.line}>
           <span>{this.props.name}</span>
-          <span className={classes.editButton}>
-            <MdMoreHoriz
-              onClick={() => this.props.clicked(this.props.id)}
-              size={18}
-              color="#969696"
-            />
+          <span
+            className={classes.editButton}
+            onClick={() => this.props.clicked(this.props.id)}
+          >
+            <MdEdit size={14} color="#969696" />
           </span>
         </div>
         {this.props.children}
@@ -56,23 +55,27 @@ class Bill extends Component {
             justifyContent: 'flex-end'
           }}
         >
-          {this.props.loadingSentIcon ? (
+          {this.props.loadingSentIcon === this.props.id ? (
             <CircleSpinner />
           ) : (
-            <MdSend
-              size={18}
-              color={this.props.sentChecked ? '#41B695' : '#969696'}
-              onClick={this.handleSendClick}
-            />
+            <div title="Marquer cette facture comme envoyée">
+              <MdSend
+                size={18}
+                color={this.props.sentChecked ? '#41B695' : '#969696'}
+                onClick={this.handleSendClick}
+              />
+            </div>
           )}
-          {this.state.loadingPaid ? (
+          {this.state.loadingPaid === this.props.id ? (
             <CircleSpinner />
           ) : (
-            <MdPayment
-              size={18}
-              color={this.state.paidChecked ? '#41B695' : '#969696'}
-              onClick={this.handlePayClick}
-            />
+            <div title="Marquer cette facture comme payée">
+              <MdPayment
+                size={18}
+                color={this.state.paidChecked ? '#41B695' : '#969696'}
+                onClick={this.handlePayClick}
+              />
+            </div>
           )}
         </div>
       </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import classes from './Client.css';
 import Modal from '../../UI/Modal/Modal';
 import Details from '../Details/Details';
-import MdMoreHoriz from 'react-icons/lib/md/more-horiz';
+import MdEdit from 'react-icons/lib/md/edit';
 
 const client = ({
   id,
@@ -29,7 +29,7 @@ const client = ({
           className={classes.editButton}
           onClick={() => clickedDetails(clientId)}
         >
-          <MdMoreHoriz size={18} color="#969696" />
+          <MdEdit size={14} color="#969696" />
         </span>
       </div>
       <Modal show={showDetails} modalClosed={() => clickedDetails(clientId)}>

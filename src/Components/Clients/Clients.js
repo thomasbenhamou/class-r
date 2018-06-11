@@ -5,12 +5,12 @@ import classes from './Clients.css';
 import ButtonInput from '../UI/ButtonInput/ButtonInput';
 import { connect } from 'react-redux';
 import * as actions from '../../store/actions/actions';
-import MdSearch from 'react-icons/lib/md/search';
 import { database } from '../../firebase/firebase';
 import Button from '../UI/Button/Button';
 import ButtonSpinner from '../UI/ButtonSpinner/ButtonSpinner';
 import BottomToaster from '../UI/BottomToaster/BottomToaster';
 import Spinner from '../UI/Spinner/Spinner';
+import SearchBar from '../UI/SearchBar/SearchBar';
 
 class Clients extends Component {
   state = {
@@ -30,7 +30,6 @@ class Clients extends Component {
   clientContainerRef = React.createRef();
 
   componentDidMount = () => {
-    // Calling setState() in this method will trigger an extra rendering, but it will happen before the browser updates the screen.This guarantees that even though the render() will be called twice in this case, the user won’t see the intermediate state.Use this pattern with caution because it often causes performance issues.It can, however, be necessary for cases like modals and tooltips when you need to measure a DOM node before rendering something that depends on its size or position.
     axios
       .get('https://class-r.firebaseio.com/clients.json')
       .then(response => {
@@ -176,6 +175,27 @@ class Clients extends Component {
         loading: true
       }
     });
+
+    const quotesRef = database.ref('quotes/');
+    quotesRef
+      .orderByChild('clientId')
+      .equalTo(this.props.selectedClient)
+      .once('value', snap => {
+        let updates = {};
+        snap.forEach(child => (updates[child.key] = null));
+        quotesRef.update(updates);
+      });
+
+    const billsRef = database.ref('bills/');
+    billsRef
+      .orderByChild('clientId')
+      .equalTo(this.props.selectedClient)
+      .once('value', snap => {
+        let updates = {};
+        snap.forEach(child => (updates[child.key] = null));
+        billsRef.update(updates);
+      });
+
     let clientRef = database.ref('clients/' + this.props.selectedClient);
     clientRef
       .remove()
@@ -203,6 +223,7 @@ class Clients extends Component {
         this.state.clients,
         this.state.searchTerm
       );
+
       if (!displayedList) clientList = 'Aucun résulat';
       displayedList &&
         (clientList = Object.keys(displayedList).map(clientId => {
@@ -252,18 +273,11 @@ class Clients extends Component {
     return (
       <div className={classes.Clients}>
         {confirmModal}
-        <h2>Clients</h2>
-        <div className={classes.inputGroup}>
-          <input
-            className={classes.searchInput}
-            value={this.state.searchTerm}
-            type="text"
-            onChange={this.handleChangeInput}
-            placeholder="Rechercher"
-          />
-          <MdSearch size={25} color="#969696" />
-        </div>
-
+        <div className={classes.catTitle}>Clients</div>
+        <SearchBar
+          searchTerm={this.state.searchTerm}
+          changed={this.handleChangeInput}
+        />
         <div className={classes.ClientsContainer} ref={this.clientContainerRef}>
           {clientList}
           {this.state.loadingNewClient ? (
@@ -297,4 +311,7 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Clients);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Clients);

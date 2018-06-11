@@ -18,6 +18,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  padding: 3px 7px;
 }
 
 .saveButton {
@@ -28,6 +29,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 3px 7px;
 }
 
 .emptyButton {

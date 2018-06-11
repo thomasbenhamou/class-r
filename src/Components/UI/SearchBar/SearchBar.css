@@ -1,0 +1,29 @@
+.searchInput {
+  outline: none;
+  /* padding: 7px; */
+  font: inherit;
+  flex: 1;
+  flex-basis: 50%;
+  background-color: transparent;
+  color: #757575;
+  border: 1px solid transparent;
+}
+
+.focused {
+  outline: none;
+  background-color: #eee;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: all 0.1s ease-in;
+  width: 100%;
+  padding: 7px;
+}
+
+.inputGroup {
+  width: 60%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: all 0.1s ease-in;
+}

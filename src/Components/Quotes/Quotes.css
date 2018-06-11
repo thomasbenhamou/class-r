@@ -2,14 +2,18 @@
   display: flex;
   box-sizing: border-box;
   flex-flow: column;
-  height: 63vh;
+  height: 72vh;
   overflow-y: scroll;
   margin-bottom: 14px;
 }
 
+.catTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
 .Quotes {
   display: flex;
-  padding: 7px;
+  /* padding: 7px; */
   box-sizing: border-box;
   position: relative;
   border-top: 7px solid #3ab795;

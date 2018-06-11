@@ -1,35 +1,13 @@
-.englober {
-  display: flex;
-  flex-flow: row;
-}
-
-.wrapper {
-  display: flex;
-  flex-flow: column;
-  margin: 10px;
-  overflow-y: scroll;
-}
-
-.quoteHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .tableWrapper {
   display: flex;
-  flex-basis: 90%;
+  flex-basis: 100%;
   flex-flow: row;
 }
 
 .flexTable {
   margin: 15px auto;
-  /* border: 1px solid #eee;
-  border-bottom: 2px solid #41b695; */
-  /* box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1), 0px 10px 20px rgba(0, 0, 0, 0.05),
-    0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05); */
   display: flex;
-  width: 90%;
+  width: 100%;
   flex-flow: column;
   box-sizing: border-box;
 }
@@ -43,13 +21,13 @@
 }
 
 .flexHeaderCells {
-  background: #41b695;
-  flex-basis: 23%;
+  background: #eee;
+  flex-basis: 25%;
   display: flex;
   flex-flow: row;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: black;
   padding: 6px 0px;
   border: 1px solid #eee;
   box-sizing: border-box;
@@ -62,7 +40,7 @@
 }
 
 .flexCell {
-  flex-basis: 23%;
+  flex-basis: 25%;
   color: #999;
   border: 1px solid #eee;
   box-sizing: border-box;
@@ -72,7 +50,7 @@
 }
 
 .flexCellDisabled {
-  flex-basis: 23%;
+  flex-basis: 25%;
   color: #999;
   border: 1px solid #eee;
   cursor: default;
@@ -86,7 +64,7 @@
   flex-flow: row;
   justify-content: flex-end;
   align-items: center;
-  width: 92%;
+  width: 100%;
 }
 
 .totalCell {
@@ -99,24 +77,4 @@
   padding: 6px 12px;
   box-sizing: border-box;
   cursor: default;
-}
-
-.controls {
-  display: flex;
-  background-color: transparent;
-  flex-basis: 7%;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.lastHeaderCell {
-  flex-basis: 7%;
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  padding: 6px 0px;
-  box-sizing: border-box;
-  background-color: transparent;
 }

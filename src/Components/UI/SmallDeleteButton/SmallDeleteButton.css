@@ -1,15 +1,15 @@
 .deleteButton {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  float: right;
-  position: absolute;
   bottom: 5px;
   right: 5px;
   font-size: 0.8rem;
-  cursor: pointer;
+  text-align: right;
 }
 
-.deleteButton:hover {
+.button:hover {
+  cursor: pointer;
   text-decoration: underline;
   color: red;
 }

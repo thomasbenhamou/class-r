@@ -6,45 +6,84 @@ import Button from '../../UI/Button/Button';
 import MdCloudDone from 'react-icons/lib/md/cloud-done';
 import MdCached from 'react-icons/lib/md/cached';
 import { database } from '../../../firebase/firebase';
+import { storage } from '../../../firebase/firebase';
 import CircleSpinner from '../../UI/CircleSpinner/CircleSpinner';
 import Controls from './Controls/Controls';
 import PrintLink from './PrintLink/PrintLink';
+import Title from '../../Company/Title/Title';
+import Infos from '../../Company/Infos/Infos';
+import CommentsArea from '../../UI/CommentsArea/CommentsArea';
 
 class QuoteDetails extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      details: this.props.details,
-      name: this.props.name,
+      details: null,
+      comments: '',
+      name: null,
       nameChanged: false,
       dataChanged: false,
       loading: false,
-      detailsHaveChanged: false
+      companyInfo: null
     };
   }
 
   static getDerivedStateFromProps = (props, state) => {
-    if (state.detailsHaveChanged) {
-      return {
-        detailsHaveChanged: false
-      };
-    } else {
-      return {
-        details: props.details,
-        name: props.name
-      };
-    }
+    let detailsData = [{}];
+    let name = '';
+    let comments = '';
+    database.ref('quotes/' + props.quoteId).on('value', snapshot => {
+      if (snapshot.val() !== null) {
+        detailsData = snapshot.val().details;
+        name = snapshot.val().name;
+        comments = snapshot.val().comments;
+      }
+    });
+    return {
+      details: detailsData,
+      name: name,
+      comments: comments
+    };
   };
 
-  updateData = quoteId => {
-    database
-      .ref('quotes/' + quoteId)
-      .once('value')
-      .then(snapshot => {
-        const quoteData = snapshot.val();
+  componentDidMount = () => {
+    database.ref('companyInfo/').on('value', snapshot => {
+      this.setState({
+        companyInfo: {
+          ...this.state.companyInfo,
+          city: snapshot.val().city,
+          email: snapshot.val().email,
+          name: snapshot.val().name,
+          phone: snapshot.val().phone,
+          street: snapshot.val().street
+        }
+      });
+    });
+    storage
+      .ref()
+      .child('file.png')
+      .getDownloadURL()
+      .then(url => {
         this.setState({
-          name: quoteData.name,
-          details: quoteData.details
+          companyInfo: {
+            ...this.state.companyInfo,
+            logo: url
+          }
+        });
+      });
+  };
+
+  updateLogo = () => {
+    storage
+      .ref()
+      .child('file.png')
+      .getDownloadURL()
+      .then(url => {
+        this.setState({
+          companyInfo: {
+            ...this.state.companyInfo,
+            logo: url
+          }
         });
       });
   };
@@ -52,25 +91,36 @@ class QuoteDetails extends Component {
   onChangeNameHandler = e => {
     this.setState({
       name: e.target.value,
-      nameChanged: true,
-      detailsHaveChanged: true
+      nameChanged: true
     });
+  };
+
+  parseFloat2Decimals = value => {
+    return parseFloat(parseFloat(value).toFixed(2));
   };
 
   onChangeHandler = (event, i, type) => {
     let value = event.target.value;
-    if (type === 'quantity' || type === 'unitPrice') {
-      value = value.replace(/\D+/, '');
+    let updatedDetails = [...this.state.details];
+    if (type === 'unitPrice') {
+      value = value.replace(',', '.');
     }
-    const updatedDetails = [...this.state.details];
+    if (type === 'quantity') {
+      value = value.replace(',', '.');
+    }
     updatedDetails[i][type] = value;
     this.setState({
       details: updatedDetails,
-      dataChanged: true,
-      detailsHaveChanged: true
+      dataChanged: true
     });
   };
 
+  onChangeComments = e => {
+    this.setState({
+      comments: e.target.value,
+      dataChanged: true
+    });
+  };
   saveChanges = totalPrice => {
     this.setState({
       loading: true
@@ -79,6 +129,7 @@ class QuoteDetails extends Component {
       {
         name: this.state.name,
         details: this.state.details,
+        comments: this.state.comments,
         totalPrice: totalPrice
       },
       error => {
@@ -87,8 +138,6 @@ class QuoteDetails extends Component {
           nameChanged: false,
           loading: false
         });
-        this.props.hasChanged(this.state.detailsHaveChanged);
-        this.updateData(this.props.quoteId);
       }
     );
   };
@@ -126,6 +175,7 @@ class QuoteDetails extends Component {
         <Controls clickedAdd={() => this.addNewLine(0)} disableMinus />
       );
     }
+
     if (this.state.details) {
       detailsTable = this.state.details.map((e, i) => {
         totalPrice += e.unitPrice * e.quantity;
@@ -134,23 +184,36 @@ class QuoteDetails extends Component {
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'product')}
-                value={this.state.details[i].product}
+                type="text"
+                value={this.state.details[i].product || ''}
               />
             </div>
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'quantity')}
-                value={this.state.details[i].quantity}
+                type="number"
+                value={this.state.details[i].quantity || 0}
+                pattern="[-+]?[0-9]"
               />
             </div>
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'unitPrice')}
-                value={this.state.details[i].unitPrice}
+                value={this.state.details[i].unitPrice || 0}
+                pattern="[-+]?[0-9]"
+                euro
+                textAlign="right"
               />
             </div>
             <div className={classes.flexCellDisabled}>
-              {this.state.details[i].unitPrice * this.state.details[i].quantity}
+              {isNaN(
+                this.state.details[i].unitPrice * this.state.details[i].quantity
+              )
+                ? 0
+                : (
+                    this.state.details[i].unitPrice *
+                    this.state.details[i].quantity
+                  ).toFixed(2) + ' €'}
             </div>
             <div className={classes.controls}>
               <Controls
@@ -163,18 +226,27 @@ class QuoteDetails extends Component {
       });
     }
 
+    let companyInfo = <CircleSpinner />;
+    if (this.state.companyInfo) {
+      companyInfo = <Infos data={this.state.companyInfo} />;
+    }
+    if (this.props.customLogo) {
+      this.updateLogo();
+    }
     return (
       <div className={classes.wrapper}>
+        {companyInfo}
+        <Title name="Devis :">
+          <CellInput
+            changed={this.onChangeNameHandler}
+            value={this.state.name ? this.state.name : ''}
+            color="#000"
+            fontSize="1.5rem"
+            textAlign="left"
+            backgroundColor="#fff"
+          />
+        </Title>
         <div className={classes.quoteHeader}>
-          <div className={classes.title}>
-            <CellInput
-              changed={this.onChangeNameHandler}
-              value={this.state.name ? this.state.name : ''}
-              color="#000"
-              fontSize="1.4rem"
-              textAlign="left"
-            />
-          </div>
           {this.state.loading ? (
             <Button btnType="emptyButton">
               <CircleSpinner />
@@ -198,8 +270,21 @@ class QuoteDetails extends Component {
               )}
             </div>
           )}
+          {this.props.creatingPdf ? (
+            <CircleSpinner />
+          ) : (
+            <PrintLink
+              clicked={() =>
+                this.props.createPdf(
+                  this.state.name,
+                  this.state.details,
+                  this.state.comments,
+                  this.state.companyInfo
+                )
+              }
+            />
+          )}
         </div>
-        <PrintLink />
         <div className={classes.tableWrapper}>
           <div className={classes.flexTable}>
             <div className={classes.flexHeader}>
@@ -212,10 +297,16 @@ class QuoteDetails extends Component {
             {detailsTable}
             <div className={classes.totalLine}>
               <div className={classes.totalCell}>Total</div>
-              <div className={classes.totalCell}>{totalPrice}</div>
+              <div className={classes.totalCell}>
+                {totalPrice.toFixed(2) + ' €'}
+              </div>
             </div>
           </div>
         </div>
+        <CommentsArea
+          value={this.state.comments}
+          changed={this.onChangeComments}
+        />
         <SmallDeleteButton clicked={this.props.onDelete} />
       </div>
     );

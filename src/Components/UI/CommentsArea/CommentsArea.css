@@ -1,0 +1,24 @@
+.comments {
+  display: flex;
+  flex-basis: 90%;
+}
+
+.commentsInput {
+  width: 75%;
+  outline: none;
+  resize: none;
+  border: 1px solid transparent;
+  color: #969696;
+  border-radius: 3px;
+  font-size: 1rem;
+  font-style: italic;
+  padding: 5px;
+}
+
+.commentsInput:hover {
+  border: 1px dashed #eee;
+}
+
+.commentsInput:focus {
+  box-shadow: 0px 0px 8px #eee;
+}

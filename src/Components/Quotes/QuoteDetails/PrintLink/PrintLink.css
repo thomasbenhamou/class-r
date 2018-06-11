@@ -1,0 +1,14 @@
+.printLink {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0px 14px;
+  margin: 0px 7px;
+  color: #999;
+}
+
+.printControls:hover {
+  cursor: pointer;
+  color: #47b595;
+}
