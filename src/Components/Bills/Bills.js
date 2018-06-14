@@ -224,7 +224,7 @@ class Bills extends Component {
       });
   };
 
-  createPdf = (billName, billData, billComments, companyData) => {
+  createPdf = (billName, billData, billComments, companyData, clientData) => {
     this.setState({
       creatingPdf: true
     });
@@ -234,6 +234,7 @@ class Bills extends Component {
         details={billData}
         comments={billComments}
         companyInfo={companyData}
+        clientInfo={clientData}
       />
     );
     const options = {
@@ -265,6 +266,7 @@ class Bills extends Component {
         >
           <BillDetails
             billId={this.state.selectedBill}
+            clientId={this.props.selectedClient}
             hasChanged={this.detailsChangedHandler}
             onDelete={this.confirmDeleteBill}
             createPdf={this.createPdf}

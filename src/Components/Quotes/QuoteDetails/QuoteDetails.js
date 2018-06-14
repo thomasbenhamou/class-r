@@ -13,6 +13,7 @@ import PrintLink from './PrintLink/PrintLink';
 import Title from '../../Company/Title/Title';
 import Infos from '../../Company/Infos/Infos';
 import CommentsArea from '../../UI/CommentsArea/CommentsArea';
+import ClientInfos from './ClientInfos/ClientInfos';
 
 class QuoteDetails extends Component {
   constructor(props) {
@@ -24,7 +25,8 @@ class QuoteDetails extends Component {
       nameChanged: false,
       dataChanged: false,
       loading: false,
-      companyInfo: null
+      companyInfo: null,
+      clientDetails: null
     };
   }
 
@@ -32,6 +34,7 @@ class QuoteDetails extends Component {
     let detailsData = [{}];
     let name = '';
     let comments = '';
+    let clientDetails = '';
     database.ref('quotes/' + props.quoteId).on('value', snapshot => {
       if (snapshot.val() !== null) {
         detailsData = snapshot.val().details;
@@ -39,10 +42,14 @@ class QuoteDetails extends Component {
         comments = snapshot.val().comments;
       }
     });
+    database.ref('clients/' + props.clientId).on('value', snap => {
+      clientDetails = snap.val();
+    });
     return {
       details: detailsData,
       name: name,
-      comments: comments
+      comments: comments,
+      clientDetails: clientDetails
     };
   };
 
@@ -228,14 +235,19 @@ class QuoteDetails extends Component {
 
     let companyInfo = <CircleSpinner />;
     if (this.state.companyInfo) {
-      companyInfo = <Infos data={this.state.companyInfo} />;
+      companyInfo = (
+        <React.Fragment>
+          <Infos data={this.state.companyInfo} />
+          <ClientInfos data={this.state.clientDetails} />
+        </React.Fragment>
+      );
     }
     if (this.props.customLogo) {
       this.updateLogo();
     }
     return (
       <div className={classes.wrapper}>
-        {companyInfo}
+        <div className={classes.header}>{companyInfo}</div>
         <Title name="Devis :">
           <CellInput
             changed={this.onChangeNameHandler}
@@ -279,7 +291,8 @@ class QuoteDetails extends Component {
                   this.state.name,
                   this.state.details,
                   this.state.comments,
-                  this.state.companyInfo
+                  this.state.companyInfo,
+                  this.state.clientDetails
                 )
               }
             />

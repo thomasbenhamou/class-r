@@ -7,7 +7,11 @@
   display: flex;
   flex-flow: column;
 }
-
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 .quoteHeader {
   display: flex;
   align-items: center;

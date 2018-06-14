@@ -24,7 +24,7 @@ const commentsArea = props => {
             maxLength="100"
             rows={2}
             onChange={props.changed}
-            value={props.value}
+            value={props.value || ''}
           />
         </div>
       </div>

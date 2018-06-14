@@ -37,7 +37,7 @@ class NavBar extends Component {
               </span>
             ) : null}
           </div>
-          <h2 className={classes.brand}>classe_r</h2>
+          <h2 className={classes.brand}>classeur_</h2>
           <div>
             <MdSettings
               onClick={this.showSettings}

@@ -178,7 +178,13 @@ class Quotes extends Component {
     }
   };
 
-  createPdf = (quoteName, quoteData, quoteComments, companyData) => {
+  createPdf = (
+    quoteName,
+    quoteData,
+    quoteComments,
+    companyData,
+    clientData
+  ) => {
     this.setState({
       creatingPdf: true
     });
@@ -189,11 +195,12 @@ class Quotes extends Component {
         details={quoteData}
         comments={quoteComments}
         companyInfo={companyData}
+        clientInfo={clientData}
       />
     );
     const options = {
       margin: 0.5,
-      filename: ('Devis' + quoteName + '.pdf').trim(),
+      filename: ('Devis ' + quoteName + '.pdf').trim(),
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: {
         logging: false,
@@ -247,6 +254,7 @@ class Quotes extends Component {
         >
           <QuoteDetails
             quoteId={this.state.selectedQuote}
+            clientId={this.props.selectedClient}
             name={this.state.name}
             onDelete={this.confirmDeleteQuote}
             createPdf={this.createPdf}

@@ -2,7 +2,8 @@
   display: flex;
   flex-flow: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  width: 40%;
 }
 
 .details {

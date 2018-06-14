@@ -28,7 +28,8 @@
   margin: 7px;
   cursor: pointer;
   border: 1px solid transparent;
-  border-left: 1px solid #faaa6c;
+  border-left: 2px solid #faaa6c;
+  transform: translateX(10px);
   background-color: #eee;
   border-radius: 3px;
 }

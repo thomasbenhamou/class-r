@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Client from './Client/Client';
-import axios from 'axios';
 import classes from './Clients.css';
 import ButtonInput from '../UI/ButtonInput/ButtonInput';
 import { connect } from 'react-redux';
@@ -18,83 +17,86 @@ class Clients extends Component {
     newClient: '',
     showingDetails: null,
     loadingNewClient: false,
+    newClientIndex: null,
     searchTerm: '',
     deleteModal: {
       show: false,
       name: '',
       loading: false
-    },
-    scrollAfterNewClient: false
+    }
   };
 
-  clientContainerRef = React.createRef();
+  newClientRef = React.createRef();
+  clientsContainerRef = React.createRef();
+  clientsArray = [];
 
   componentDidMount = () => {
-    axios
-      .get('https://class-r.firebaseio.com/clients.json')
-      .then(response => {
-        this.setState({
-          clients: response.data
-        });
-      })
-      .catch(error => {
-        console.log(error);
+    database.ref('clients/').on('value', snap => {
+      this.setState({
+        clients: snap.val()
       });
-  };
-
-  scrollToBottom = () => {
-    const container = this.clientContainerRef.current;
-    container.scrollTop = container.scrollHeight;
-    this.setState({
-      scrollAfterNewClient: false
     });
   };
 
-  updateList = () => {
-    axios
-      .get('https://class-r.firebaseio.com/clients.json')
-      .then(response => {
-        this.setState({
-          clients: response.data,
-          newClient: '',
-          loadingNewClient: false
-        });
-        if (this.state.scrollAfterNewClient) {
-          this.scrollToBottom();
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+  convertJsonToArray = jsonList => {
+    let arrayList = [];
+    Object.keys(jsonList).map(e => {
+      const client = {
+        id: e,
+        name: jsonList[e].name,
+        details: jsonList[e].details
+      };
+      arrayList.push(client);
+      return null;
+    });
+    return arrayList;
+  };
+
+  sortClients = arrayList => {
+    const sortedList = arrayList.sort((a, b) => {
+      return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+    });
+    return sortedList;
   };
 
   addNewClient = newClientName => {
     this.setState({
       loadingNewClient: true
     });
-    const newClient = {
-      name: newClientName,
-      details: {
-        city: '',
-        email: '',
-        phone: '',
-        street: ''
-      }
-    };
-    axios
-      .post('https://class-r.firebaseio.com/clients.json', newClient)
-      .then(response => {
-        this.setState({
-          scrollAfterNewClient: true
-        });
-        this.updateList();
-      })
-      .catch(error => {
+    database.ref('clients/').push(
+      {
+        name: newClientName,
+        details: {
+          city: '',
+          email: '',
+          phone: '',
+          street: ''
+        }
+      },
+      complete => {
         this.setState({
           loadingNewClient: false
         });
-        console.log(error);
+        this.scrollAfterNewClient(newClientName);
+      }
+    );
+  };
+
+  scrollAfterNewClient = name => {
+    const i = this.clientsArray.findIndex(e => {
+      return e.name === name;
+    });
+    this.setState({
+      newClientIndex: i
+    });
+    const container = this.clientsContainerRef.current;
+    const scrollTarget = i * 36;
+    container.scrollTop = scrollTarget;
+    setTimeout(() => {
+      this.setState({
+        newClientIndex: null
       });
+    }, 2000);
   };
 
   onSelectClient = (event, clientId) => {
@@ -131,21 +133,12 @@ class Clients extends Component {
     if (searchTerm === '') {
       return list;
     }
-    let filteredList = null;
-    Object.keys(list).map(e => {
-      const listElem = list[e].name
+    let filteredList = list.filter(e => {
+      const listElem = e.name
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
-      if (listElem.match(search)) {
-        filteredList = {
-          ...filteredList,
-          [e]: {
-            ...list[e]
-          }
-        };
-      }
-      return null;
+      return listElem.match(search);
     });
     return filteredList;
   };
@@ -208,7 +201,6 @@ class Clients extends Component {
         });
         this.confirmDeleteClient();
         this.onShowDetails();
-        this.updateList();
       })
       .catch(error => {
         console.log('Remove failed: ' + error.message);
@@ -217,39 +209,27 @@ class Clients extends Component {
 
   render() {
     let clientList = <Spinner />;
-
     if (this.state.clients) {
-      let displayedList = this.filterList(
-        this.state.clients,
-        this.state.searchTerm
-      );
-
-      if (!displayedList) clientList = 'Aucun résulat';
-      displayedList &&
-        (clientList = Object.keys(displayedList).map(clientId => {
-          return (
-            clientId && (
-              <Client
-                key={clientId}
-                id={clientId}
-                name={displayedList[clientId].name}
-                details={
-                  displayedList[clientId].details
-                    ? displayedList[clientId].details
-                    : null
-                }
-                clicked={this.onSelectClient}
-                clickedDetails={this.onShowDetails}
-                selected={clientId === this.props.selectedClient}
-                onDelete={() =>
-                  this.confirmDeleteClient(displayedList[clientId].name)
-                }
-                showDetails={clientId === this.state.showingDetails}
-                updated={this.updateList}
-              />
-            )
-          );
-        }));
+      const arrayList = this.convertJsonToArray(this.state.clients);
+      clientList = this.sortClients(arrayList);
+      let filteredList = this.filterList(clientList, this.state.searchTerm);
+      this.clientsArray = filteredList;
+      clientList = filteredList.map((e, index) => {
+        return (
+          <Client
+            key={e.id}
+            id={e.id}
+            name={e.name}
+            isNew={this.state.newClientIndex === index ? true : false}
+            details={e.details}
+            clicked={this.onSelectClient}
+            clickedDetails={this.onShowDetails}
+            selected={e.id === this.props.selectedClient}
+            onDelete={() => this.confirmDeleteClient(e.name)}
+            showDetails={e.id === this.state.showingDetails}
+          />
+        );
+      });
     }
 
     const confirmModal = (
@@ -278,7 +258,10 @@ class Clients extends Component {
           searchTerm={this.state.searchTerm}
           changed={this.handleChangeInput}
         />
-        <div className={classes.ClientsContainer} ref={this.clientContainerRef}>
+        <div
+          className={classes.ClientsContainer}
+          ref={this.clientsContainerRef}
+        >
           {clientList}
           {this.state.loadingNewClient ? (
             <Client name="...">

@@ -50,7 +50,7 @@ class Details extends Component {
             nameChanged: false,
             loading: false
           });
-          this.props.updated();
+          this.saveChanges();
         })
         .catch(error => {
           console.log(error);
@@ -75,10 +75,6 @@ class Details extends Component {
         .slice(0, 14);
     }
 
-    if (type === 'city') {
-      value = value.toUpperCase();
-    }
-
     this.setState({
       ...this.state,
       details: {
@@ -90,12 +86,9 @@ class Details extends Component {
   };
 
   saveChanges = () => {
-    if (!this.state.dataChanged) {
-      if (this.state.nameChanged) {
-        this.saveNameChanges();
-      }
-      return;
-    } else {
+    if (this.state.nameChanged) {
+      this.saveNameChanges();
+    } else if (this.state.dataChanged) {
       this.setState({
         loading: true
       });
@@ -111,7 +104,6 @@ class Details extends Component {
             dataChanged: false,
             loading: false
           });
-          this.props.updated();
         })
         .catch(error => {
           console.log(error);

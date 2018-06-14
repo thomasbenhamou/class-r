@@ -16,6 +16,12 @@
   justify-content: flex-end;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .tableWrapper {
   display: flex;
   flex-basis: 90%;

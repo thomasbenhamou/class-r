@@ -12,6 +12,7 @@ import PrintLink from '../../Quotes/QuoteDetails/PrintLink/PrintLink';
 import Infos from '../../Company/Infos/Infos';
 import Title from '../../Company/Title/Title';
 import CommentsArea from '../../UI/CommentsArea/CommentsArea';
+import ClientInfos from '../../Quotes/QuoteDetails/ClientInfos/ClientInfos';
 
 class BillDetails extends Component {
   constructor(props) {
@@ -24,7 +25,8 @@ class BillDetails extends Component {
       dataChanged: false,
       loading: false,
       detailsHaveChanged: false,
-      companyInfo: null
+      companyInfo: null,
+      clientDetails: null
     };
   }
 
@@ -32,6 +34,7 @@ class BillDetails extends Component {
     let detailsData = null;
     let name = null;
     let comments = null;
+    let clientDetails = '';
     database.ref('bills/' + props.billId).on('value', snapshot => {
       if (snapshot.val()) {
         detailsData = snapshot.val().details;
@@ -39,13 +42,15 @@ class BillDetails extends Component {
         comments = snapshot.val().comments;
       }
     });
-    if (detailsData && name) {
-      return {
-        details: detailsData,
-        name: name,
-        comments: comments
-      };
-    } else return null;
+    database.ref('clients/' + props.clientId).on('value', snap => {
+      clientDetails = snap.val();
+    });
+    return {
+      details: detailsData,
+      name: name,
+      comments: comments,
+      clientDetails: clientDetails
+    };
   };
 
   componentDidMount = () => {
@@ -195,25 +200,33 @@ class BillDetails extends Component {
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'product')}
-                value={this.state.details[i].product}
+                value={this.state.details[i].product || ''}
               />
             </div>
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'quantity')}
-                value={this.state.details[i].quantity}
+                value={this.state.details[i].quantity || 0}
               />
             </div>
             <div className={classes.flexCell}>
               <CellInput
                 changed={event => this.onChangeHandler(event, i, 'unitPrice')}
-                value={this.state.details[i].unitPrice}
+                value={this.state.details[i].unitPrice || 0}
+                pattern="[-+]?[0-9]"
+                euro
+                textAlign="right"
               />
             </div>
             <div className={classes.flexCellDisabled}>
-              {this.state.details[i].unitPrice *
-                this.state.details[i].quantity +
-                ' €'}
+              {isNaN(
+                this.state.details[i].unitPrice * this.state.details[i].quantity
+              )
+                ? 0
+                : (
+                    this.state.details[i].unitPrice *
+                    this.state.details[i].quantity
+                  ).toFixed(2) + ' €'}
             </div>
             <div className={classes.controls}>
               <Controls
@@ -227,8 +240,13 @@ class BillDetails extends Component {
     }
 
     let companyInfo = <CircleSpinner />;
-    if (this.state.companyInfo) {
-      companyInfo = <Infos data={this.state.companyInfo} />;
+    if (this.state.companyInfo && this.state.clientDetails) {
+      companyInfo = (
+        <React.Fragment>
+          <Infos data={this.state.companyInfo} />
+          <ClientInfos data={this.state.clientDetails} />
+        </React.Fragment>
+      );
     }
 
     if (this.props.customLogo) {
@@ -237,7 +255,7 @@ class BillDetails extends Component {
 
     return (
       <div className={classes.wrapper}>
-        {companyInfo}
+        <div className={classes.header}>{companyInfo}</div>
         <Title name="Facture :">
           <CellInput
             changed={this.onChangeNameHandler}
@@ -289,7 +307,8 @@ class BillDetails extends Component {
                 this.state.name,
                 this.state.details,
                 this.state.comments,
-                this.state.companyInfo
+                this.state.companyInfo,
+                this.state.clientDetails
               )
             }
           />

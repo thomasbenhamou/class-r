@@ -39,7 +39,8 @@ class DropzoneBill extends Component {
         onDragLeave={this.onDragLeave}
         onDrop={this.onDrop}
       >
-        Glisser un devis ici pour créer une facture
+        Glisser un devis ici pour créer une facture ou pour mettre à jour une
+        facture existante
       </div>
     );
   }

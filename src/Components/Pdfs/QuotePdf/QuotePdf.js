@@ -2,8 +2,9 @@ import React from 'react';
 import Infos from '../../Company/Infos/Infos';
 import Title from '../../Company/Title/Title';
 import classes from './QuotePdf.css';
+import ClientInfos from '../../Quotes/QuoteDetails/ClientInfos/ClientInfos';
 
-const quotePdf = ({ name, details, comments, companyInfo }) => {
+const quotePdf = ({ name, details, comments, companyInfo, clientInfo }) => {
   let totalPrice = null;
   const detailsTable = details.map((e, i) => {
     totalPrice += e.unitPrice * e.quantity;
@@ -21,7 +22,10 @@ const quotePdf = ({ name, details, comments, companyInfo }) => {
 
   return (
     <React.Fragment>
-      <Infos data={companyInfo} />
+      <div className={classes.header}>
+        <Infos data={companyInfo} />
+        <ClientInfos data={clientInfo} />
+      </div>
       <Title name="Devis :"> {name}</Title>
       <div className={classes.tableWrapper}>
         <div className={classes.flexTable}>

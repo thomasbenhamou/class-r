@@ -20,6 +20,12 @@
   font-size: 0.9rem;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .flexHeaderCells {
   background: #eee;
   flex-basis: 25%;

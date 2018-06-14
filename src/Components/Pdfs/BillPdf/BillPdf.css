@@ -3,6 +3,11 @@
   flex-basis: 100%;
   flex-flow: row;
 }
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .flexTable {
   margin: 15px auto;

@@ -2,8 +2,9 @@ import React from 'react';
 import classes from './BillPdf.css';
 import Infos from '../../Company/Infos/Infos';
 import Title from '../../Company/Title/Title';
+import ClientInfos from '../../Quotes/QuoteDetails/ClientInfos/ClientInfos';
 
-const billPdf = ({ name, details, comments, companyInfo }) => {
+const billPdf = ({ name, details, comments, companyInfo, clientInfo }) => {
   let totalPrice = null;
   const detailsTable = details.map((e, i) => {
     totalPrice += e.unitPrice * e.quantity;
@@ -21,7 +22,11 @@ const billPdf = ({ name, details, comments, companyInfo }) => {
 
   return (
     <React.Fragment>
-      <Infos data={companyInfo} />
+      <div className={classes.header}>
+        <Infos data={companyInfo} />
+        <ClientInfos data={clientInfo} />
+      </div>
+
       <Title name="Facture"> {name}</Title>
       <div className={classes.tableWrapper}>
         <div className={classes.flexTable}>
