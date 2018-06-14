@@ -8,6 +8,7 @@ import Modal from '../UI/Modal/Modal';
 import MdLightBulbOutline from 'react-icons/lib/md/lightbulb-outline';
 import MdFace from 'react-icons/lib/md/face';
 import Arrow from 'react-icons/lib/md/keyboard-arrow-right';
+import MdClose from 'react-icons/lib/md/close';
 
 class Classeur extends Component {
   state = {
@@ -29,6 +30,16 @@ class Classeur extends Component {
           padding={'0px'}
         >
           <div className={classes.banner}>
+            <span
+              style={{ cursor: 'pointer' }}
+              onClick={() =>
+                this.setState({
+                  showModal: false
+                })
+              }
+            >
+              <MdClose size={25} color="#aaa" />
+            </span>
             <MdLightBulbOutline size={25} color="yellow" />
           </div>
           <div className={classes.welcome}>

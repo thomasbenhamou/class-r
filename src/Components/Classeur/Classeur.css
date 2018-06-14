@@ -25,5 +25,5 @@
   width: 100%;
   flex-flow: row;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
