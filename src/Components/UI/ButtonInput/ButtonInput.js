@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import classes from './ButtonInput.css';
 import MdPersonAdd from 'react-icons/lib/md/person-add';
 import MdAdd from 'react-icons/lib/md/add';
+import ButtonSpinner from '../ButtonSpinner/ButtonSpinner';
 
 class ButtonInput extends Component {
   state = {
@@ -68,14 +69,18 @@ class ButtonInput extends Component {
             onFocus={this.onFocusHandler}
             onBlur={this.onFocusHandler}
           >
-            <input
-              type="text"
-              ref={this.inputRef}
-              placeholder={this.props.placeholder}
-              className={classes.Input}
-              value={this.state.newItemName}
-              onChange={this.inputChangeHandler}
-            />
+            {this.props.loading ? (
+              <ButtonSpinner />
+            ) : (
+              <input
+                type="text"
+                ref={this.inputRef}
+                placeholder={this.props.placeholder}
+                className={classes.Input}
+                value={this.state.newItemName}
+                onChange={this.inputChangeHandler}
+              />
+            )}
             <button type="submit" className={classes.noButton}>
               {icon}
             </button>

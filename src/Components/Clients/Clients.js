@@ -263,11 +263,6 @@ class Clients extends Component {
           ref={this.clientsContainerRef}
         >
           {clientList}
-          {this.state.loadingNewClient ? (
-            <Client name="...">
-              <ButtonSpinner />
-            </Client>
-          ) : null}
         </div>
         <div className={classes.fixedBottomMenu}>
           <ButtonInput

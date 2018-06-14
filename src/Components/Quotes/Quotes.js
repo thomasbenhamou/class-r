@@ -86,6 +86,9 @@ class Quotes extends Component {
         comments: ''
       },
       error => {
+        this.setState({
+          loadingNewQuote: false
+        });
         this.scrollToBottom();
         if (error) {
           console.log('error');
