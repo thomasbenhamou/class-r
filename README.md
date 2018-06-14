@@ -3,7 +3,7 @@
 
 ### https://class-r.firebaseapp.com/
 
-**classeur_**, a react single page application to manage the main data of your small or medium company (in french!):
+**classeur_**, a react single page application :computer: to manage the main data of your small or medium company (in french! :satisfied:):
 * create and edit clients
 * create and edit quotes
 * automatically create bills from your quotes, mark them as "send" or "paid"
